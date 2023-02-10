@@ -1,0 +1,23 @@
+.aside__menu {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+%aside__menu-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 5px 0 5px 20px;
+  color: #fff;
+  vertical-align: middle;
+}
+
+.aside__menu-item {
+  @extend %aside__menu-item;
+}
+
+.aside__menu-item_active {
+  @extend %aside__menu-item;
+  background-color: #a1a1aa;
+}
