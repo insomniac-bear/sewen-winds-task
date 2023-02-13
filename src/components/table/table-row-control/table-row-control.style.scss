@@ -1,4 +1,4 @@
-.table__controll {
+.table__control {
   display: flex;
   align-items: center;
   gap: 7px;
@@ -11,25 +11,33 @@
   overflow: hidden;
 }
 
-.table__controll_open {
-  padding: 1px 2px 0 2px;
+.table__control_open {
+  padding: 0px 2px;
   top: 0;
   left: 0;
   width: fit-content;
   background-color: #414144;
 }
 
-.table__controll_2 {
-  margin-left: 12px;
-}
+// .table__control_2 {
+//   margin-left: 12px;
+// }
 
-.table__controll_3 {
-  margin-left: 24px;
-}
+// .table__control_3 {
+//   margin-left: 24px;
+// }
 
 .table__control-item {
   margin: 0;
   padding: 0;
   width: fit-content;
   height: fit-content;
+}
+
+.table__control-button {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background-color: inherit;
+  cursor: pointer;
 }

@@ -1,107 +1,79 @@
-import { FC, useEffect, useState } from 'react';
-import { TableRowControll } from '../table-row-controll/table-row-controll';
-import { useAppDispatch, useAppSelector } from '../../../services/hooks';
-import {
-  getData,
-  rowDataInitial,
-  rowNameInput,
-  rowValueInput
-} from '../../../services/form-slice/form-slice';
-import { createRow } from '../../../services/api/api';
+import { FC, useState } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { InferType } from 'yup';
+import { TableRowControl } from '../table-row-control/table-row-control';
 import { ITableData } from './table-row.types';
+import { formSchema } from './schema';
+import { DATA_NAMES, INITIAL_ROW_DATA, UTIL_ROW_DATA } from './const';
+import { useAppDispatch } from '../../../services/hooks';
+import { createRow } from '../../../services/api/api';
+import { TableDataForm } from '../table-data-form/table-data-form';
+import { TableData } from '../table-data/table-data';
+
+export type TForm = InferType<typeof formSchema>;
 
 export const TableRowData: FC<ITableData> = ({ data, level, isRowEdit = false }) => {
+  const tableData = data ? data : INITIAL_ROW_DATA;
+
   const dispatch = useAppDispatch();
-  const inputData = useAppSelector(getData);
-
-  useEffect(() => {
-    dispatch(rowDataInitial({
-      rowName: data?.rowName || '',
-      mainCosts: data?.mainCosts || 0,
-      equipmentCosts: data?.equipmentCosts || 0,
-      supportCosts: data?.equipmentCosts || 0,
-      estimatedProfit: data?.estimatedProfit || 0,
-    }));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const [isEdit, setEdit] = useState(isRowEdit);
-
-  const onInputValueChange = (e: any) => {
-    dispatch(rowValueInput({
-      field: e.target.name,
-      value: e.target.value
-    }));
-  };
-
-  const onEnterPress = (e: any) => {
-    if (e.key === 'Enter') {
-      console.log(inputData);
-      dispatch(createRow(inputData));
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<TForm>({
+    resolver: yupResolver(formSchema),
+    defaultValues: {
+      equipmentCosts: tableData.equipmentCosts,
+      rowName: tableData.rowName,
+      salary: tableData.salary,
+      overheads: tableData.overheads,
+      estimatedProfit: tableData.estimatedProfit,
     }
-  };
+  });
+
+  const formSubmitHandler: SubmitHandler<TForm> = data => {
+    dispatch(createRow({
+      ...data,
+      parentId: tableData.id || null,
+      ...UTIL_ROW_DATA,
+    }));
+    reset();
+  }
 
   return(
-    <tr onDoubleClick={() => setEdit(true)}>
-      <td className={`table__data level`}>
-        <TableRowControll level={level} />
-      </td>
-      <td className={`table__data name`}>
-        { !isEdit ?
-            data?.rowName :
-            <input
-              className="table__input"
-              name="rowName"
-              value={ inputData.rowName }
-              onChange={(e: any) => dispatch(rowNameInput(e.target.value))}
-              onKeyDown={onEnterPress}
+    <>
+      <tr onDoubleClick={() => setEdit(true)}>
+        <TableRowControl
+          level={level}
+          dataId={tableData.id}
+          isRowEmpty={!data}
+        />
+        <TableDataForm
+          handleSubmit={handleSubmit}
+          formSubmitHandler={formSubmitHandler}
+          formId={`${tableData.id}`}
+        />
+        {
+          DATA_NAMES.map((key, index) =>
+            <TableData
+              key={index}
+              formId={`${tableData.id}`}
+              isEdit={isEdit}
+              dataName={key}
+              cellData={tableData[key]}
+              register={register}
+              errors={errors}
             />
+          )
         }
-      </td>
-      <td className={`table__data value`}>
-        { !isEdit ?
-            data?.mainCosts :
-            <input
-              className="table__input"
-              name="mainCosts"
-              value={ inputData.mainCosts }
-              onChange={onInputValueChange}
-            />
-        }
-      </td>
-      <td className={`table__data value`}>
-        { !isEdit ?
-            data?.equipmentCosts :
-            <input
-              className="table__input"
-              name="equipmentCosts"
-              value={ inputData.equipmentCosts }
-              onChange={onInputValueChange}
-            />
-        }
-      </td>
-      <td className={`table__data value`}>
-        { !isEdit ?
-            data?.supportCosts :
-            <input
-              className="table__input"
-              name="supportCosts"
-              value={ inputData.supportCosts }
-              onChange={onInputValueChange}
-            />
-        }
-      </td>
-      <td className={`table__data value`}>
-        { !isEdit ?
-            data?.estimatedProfit :
-            <input
-              className="table__input"
-              name="estimatedProfit"
-              value={ inputData.estimatedProfit }
-              onChange={onInputValueChange}
-            />
-        }
-      </td>
-    </tr>
+      </tr>
+      {
+        tableData.child &&
+        tableData.child.map(childData => <TableRowData level={level + 1} data={childData}/>)
+      }
+    </>
   );
 };

@@ -33,6 +33,14 @@
   box-sizing: border-box;
 }
 
+.table__input_error {
+  border-color: red;
+}
+
+.table__input_error::placeholder {
+  color: red;
+}
+
 .level {
   width: 250px;
 }
@@ -53,4 +61,8 @@
 
 .third-level {
   margin-left: 24px;
+}
+
+.table__label {
+  position: relative;
 }
